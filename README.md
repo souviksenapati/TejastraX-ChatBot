@@ -1,105 +1,123 @@
-# Subspace Pro AI Assistant 🚀
+# TejastraX Chatbot 🚀
 
-A full-stack, real-time, and secure AI chatbot application built to showcase modern web development practices. This project was created as part of the Intern Assessment for Subspace.
-
----
-
-### **✨ Live Demo & Showcase**
-
-* **Deployed Site:** `https://subspaceaichatbot.netlify.app/`
-* **Video Walkthrough:** `https://tinyurl.com/44fpbw33`
+A modern, real-time, secure AI chat application built with React, Apollo, and Nhost/Hasura GraphQL. TejastraX delivers a polished chat experience with authentication, live updates, markdown/code rendering, and thoughtful UX.
 
 ---
-## About The Project
 
-**Subspace Pro** is a sophisticated AI assistant designed for real-time, intelligent conversations. The application is built from the ground up on a modern, serverless, GraphQL-native architecture. It features a polished, responsive user interface with advanced conversational features like chat history management, markdown rendering, and the ability to edit and regenerate responses.
+### ✨ Live Demo
 
-The entire project adheres strictly to the assignment's requirements, focusing on security, a GraphQL-only API, and a clean separation of concerns between the frontend and a secure automation backend.
+- Deployed Site: https://tejastrax-chatbot.netlify.app/
 
 ---
-## Core Technologies
+## About
 
-* **Frontend:** React (Vite), Tailwind CSS, Framer Motion
-* **Backend as a Service (BaaS):** Nhost
-* **Authentication:** Nhost Auth
-* **Database:** Postgres (via Nhost)
-* **API Layer:** Hasura GraphQL (real-time via Subscriptions)
-* **Automation/AI Middleware:** n8n
-* **AI Model:** OpenRouter (Google Gemma / Mistral 7B)
-* **Deployment:** Netlify
+TejastraX is a full-stack AI assistant designed for fast, context-aware conversations. It uses a serverless architecture with GraphQL end-to-end. The frontend never exposes AI keys directly—messages are sent via a secure Hasura Action to a backend workflow that calls the model and persists results.
 
 ---
 ## Key Features
 
-* ✅ **Secure Authentication:** Full email/password sign-in and sign-up flow.
-* ✅ **Data Privacy:** Strict Row-Level Security (RLS) ensures users can only ever access their own chat data.
-* ✅ **Real-time Messaging:** A live chat experience built with GraphQL Subscriptions.
-* ✅ **Intelligent AI:** The "Subspace Pro" assistant has conversational memory and is powered by advanced prompt engineering.
-* ✅ **Rich Text Formatting:** Full Markdown rendering for chatbot responses, including styled code blocks with a "copy-to-clipboard" function.
-* ✅ **Advanced Chat Controls:**
-    * Edit and rename chat titles.
-    * Delete chats with a confirmation step.
-    * Edit your last message and regenerate the AI's response.
-* ✅ **Polished UI/UX:**
-    * A clean, modern interface inspired by leading AI applications.
-    * Fully responsive design for desktop and mobile.
-    * Toggable sidebar for a focused chat experience.
-    * Seamless light and dark mode support.
-    * Smooth animations and transitions with Framer Motion.
+- Secure auth with email/password (Nhost Auth)
+- Per-user data isolation with Row-Level Security (RLS)
+- Real-time chat via GraphQL Subscriptions
+- Markdown rendering with syntax-highlighted code blocks and copy-to-clipboard
+- Chat management: create, rename, delete with confirmation
+- Edit your last user message and regenerate the response
+- Responsive UI with light/dark theme, smooth transitions (Framer Motion)
+- Clean, focused chat layout with collapsible sidebar
 
 ---
-## System Architecture
+## Tech Stack
 
-The application follows a secure, decoupled architecture that prioritizes safety and best practices.
-
-1.  **Frontend (React):** The user interacts with the React application deployed on Netlify. All communication with the backend is exclusively through GraphQL.
-2.  **API & Database (Hasura/Nhost):** Hasura provides an instant, real-time GraphQL API over a Postgres database. All requests are authenticated, and Nhost's RLS policies enforce strict data isolation.
-3.  **Chatbot Logic (n8n):** To protect sensitive API keys, the frontend **never** calls the AI directly. Instead, it calls a Hasura Action, which triggers a secure webhook to an **n8n workflow**.
-4.  **Secure Middleware:** The n8n workflow acts as a secure backend service. It receives the request, validates the user, fetches chat history, calls the external OpenRouter AI, saves the response back to the database via a GraphQL mutation, and returns the final reply. This ensures all secrets and complex business logic are kept safely on the server.
+- Frontend: React 18 (Vite), Tailwind CSS, Framer Motion
+- State/Data: Apollo Client, GraphQL
+- Backend (BaaS): Nhost (Postgres + Hasura GraphQL + Auth)
+- Real-time: GraphQL Subscriptions
+- Automation/AI middleware: Hasura Action → secure backend workflow (e.g., n8n)
+- Deployment: Netlify
 
 ---
-## Local Development Setup
+## Architecture Overview
 
-To run this project locally, follow these steps:
+1) Frontend (Netlify): React app talks only to GraphQL using Apollo and Nhost SDKs.
+2) API & DB (Nhost/Hasura): Authenticated GraphQL with RLS policies to restrict data per user.
+3) Hasura Action: Frontend calls a custom mutation `sendMessage` instead of hitting the AI directly.
+4) Secure workflow (e.g., n8n): Validates user/chat, fetches history, calls the AI provider, writes the assistant reply back via GraphQL, returns the final text.
 
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/Chaithanyaina/T-ai-chatbot-app.git
-    cd T-ai-chatbot-app
-    ```
-2.  **Install dependencies:**
-    ```bash
-    npm install
-    ```
-3.  **Set up the Backend:**
-    * Create a new project on [Nhost](https://nhost.io).
-    * Run the provided SQL to create the `chats` and `messages` tables.
-    * Configure the required permissions and the Hasura Action.
-    * Set up and activate the n8n workflow.
+---
+## App Structure (high level)
 
-4.  **Configure Environment Variables:**
-    * Create a `.env.local` file in the root of the project.
-    * Add your Nhost project's details:
-        ```
-        VITE_NHOST_SUBDOMAIN=your-nhost-subdomain
-        VITE_NHOST_REGION=your-nhost-region
-        ```
+- Routes: `/sign-in`, `/sign-up`, `/` (protected dashboard)
+- Core UI: `ChatList` (sidebar), `MessageView` (chat), `ProtectedRoute`
+- GraphQL:
+    - Query: `GetChats`
+    - Subscription: `MessagesSubscription(chat_id)`
+    - Mutations: `CreateChat`, `UpdateChatTitle`, `DeleteChat`, `InsertUserMessage`, `UpdateMessage`, `DeleteMessage`
+    - Action: `sendMessage(chat_id, message)` → triggers backend workflow
 
-5.  **Run the application:**
-    ```bash
-    npm run dev
-    ```
+---
+## Quick Start (Local)
 
-    
-6.  **Future Enhancements**
+Prerequisites
+- Node.js LTS and npm
+- An Nhost project (provides Hasura GraphQL, Postgres, and Auth)
 
-The current application serves as a robust and feature-complete foundation. The following enhancements are planned to further expand its capabilities:
+1) Install dependencies
+```
+npm install
+```
 
-* **File and Image Uploads:** Integrate Nhost Storage to allow users to upload images and documents. This would be coupled with a multi-modal AI model, enabling the chatbot to analyze, summarize, and discuss the content of the uploaded files.
+2) Configure environment
+- Create a `.env.local` file in the project root with your Nhost details:
+```
+VITE_NHOST_SUBDOMAIN=your-nhost-subdomain
+VITE_NHOST_REGION=your-nhost-region
+```
 
-* **Global Chat Search:** Implement a powerful, full-text search functionality, allowing users to instantly find specific messages or information across their entire conversation history.
+3) Backend setup (Nhost/Hasura)
+- Create tables (suggested):
+    - `chats`: id (uuid, pk), user_id (uuid), title (text), created_at (timestamptz)
+    - `messages`: id (uuid, pk), chat_id (uuid, fk), user_id (uuid), role (text: 'user'|'assistant'), content (text), created_at (timestamptz)
+- Enable RLS so users only see their own chats/messages.
+- Create a Hasura Action named `sendMessage` matching the variables used in the app:
+    - Input: `chat_id: uuid!`, `message: String!`
+    - Handler: your secure workflow URL (e.g., n8n)
+    - The handler should fetch history, call your AI provider, and insert an assistant message via GraphQL.
 
-* **Deep Personal Finance Integration:** Further develop the "Subspace Pro" persona into an indispensable financial assistant by adding specialized tools. This could include features for:
-    * Analyzing spending patterns from uploaded bank statements.
-    * Tracking subscription price changes over time.
-    * Offering proactive savings advice based on user data.
+4) Run the app
+```
+npm run dev
+```
+
+5) Build/Preview
+```
+npm run build
+npm run preview
+```
+
+---
+## Deployment (Netlify)
+
+- Connect the repo or deploy the build folder.
+- Set environment variables in Netlify site settings:
+    - `VITE_NHOST_SUBDOMAIN`
+    - `VITE_NHOST_REGION`
+- Build command: `npm run build`
+- Publish directory: `dist`
+
+---
+## Notable UI/UX Details
+
+- Elegant hero screen when no chat is selected with quick-start prompts
+- Theme toggle in the sidebar/header and auth screens
+- Animated branding (`LogoTejastraX`) and tasteful motion
+- Code blocks are highlighted and include a one-click copy button
+
+---
+## Credits
+
+Built with ❤️ as TejastraX. UI refinements and animations by Souvik Senapati.
+
+---
+## License
+
+This project is provided as-is for educational and demo purposes. Add a LICENSE file if you intend to distribute under a specific license.
