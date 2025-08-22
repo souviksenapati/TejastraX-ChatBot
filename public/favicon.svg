@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>TejastraX – T Favicon</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#111827"/>
+      <stop offset="100%" stop-color="#0b1220"/>
+    </linearGradient>
+    <linearGradient id="tGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#c7eeff"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+    <filter id="soft" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="1" stdDeviation="0.6" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- rounded dark tile -->
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="url(#bg)"/>
+  <!-- subtle inner border -->
+  <rect x="4.5" y="4.5" width="55" height="55" rx="13.5" fill="none" stroke="#ffffff" opacity="0.06"/>
+
+  <!-- accent arc -->
+  <path d="M50 18 A22 22 0 0 1 14 18" fill="none" stroke="url(#accent)" stroke-width="3" opacity="0.28"/>
+
+  <!-- Stylish T -->
+  <g transform="translate(0.5,0)" filter="url(#soft)">
+    <!-- top bar with angled ends -->
+    <path d="M14 22 L22 16 H42 L50 22 L42 26 H22 Z" fill="url(#tGrad)"/>
+    <!-- vertical stem -->
+    <rect x="28" y="26" width="8" height="24" rx="4" fill="url(#tGrad)"/>
+    <!-- tiny cyan cut to imply motion on the right end of the bar -->
+    <path d="M46 20 L50 22 L46 24 Z" fill="#7dd3fc" opacity="0.85"/>
+  </g>
+</svg>
