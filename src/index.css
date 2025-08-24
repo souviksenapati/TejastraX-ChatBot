@@ -56,3 +56,22 @@
     animation: gradient-bg 15s ease infinite;
   }
 }
+
+/* Mobile optimizations */
+@layer utilities {
+  .safe-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom), 16px);
+  }
+  .safe-top {
+    padding-top: max(env(safe-area-inset-top), 16px);
+  }
+}
+
+/* Reduce tap highlight and over-scroll on mobile */
+* { -webkit-tap-highlight-color: transparent; }
+html, body, #root { height: 100%; }
+textarea { -webkit-user-select: text; user-select: text; }
+
+/* Prevent horizontal scroll on code blocks on small screens */
+pre, code { word-wrap: normal; word-break: normal; }
+pre { overflow-x: auto; -webkit-overflow-scrolling: touch; }

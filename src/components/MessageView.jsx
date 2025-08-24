@@ -15,6 +15,7 @@ import {
   Copy,
   Pencil,
   Menu as MenuIcon,
+  PlusCircle,
   
 } from 'lucide-react';
 import clsx from 'clsx';
@@ -191,26 +192,54 @@ const MessageView = ({ chatId, isSidebarOpen, setIsSidebarOpen, onSelectChat }) 
       }
     };
 
+    const startNewChat = async () => {
+      try {
+        const title = `New Chat - ${new Date().toLocaleTimeString()}`;
+        const res = await createChat({
+          variables: { title },
+          update: (cache, { data }) => {
+            const newChat = data?.insert_chats_one;
+            if (!newChat) return;
+            try {
+              const existing = cache.readQuery({ query: GET_CHATS_QUERY });
+              const existingChats = existing?.chats || [];
+              cache.writeQuery({
+                query: GET_CHATS_QUERY,
+                data: { chats: [newChat, ...existingChats] },
+              });
+            } catch (e) {
+              // ignore if cache not primed
+            }
+          },
+        });
+        const newId = res?.data?.insert_chats_one?.id;
+        if (newId) onSelectChat?.(newId);
+      } catch (err) {
+        toast.error(`Failed to start chat: ${err.message}`);
+      }
+    };
+
     return (
       <div className="flex-grow flex items-center justify-center h-full relative">
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="absolute top-4 left-4 p-2 rounded-md text-gray-500 dark:text-muted-foreground hover:bg-gray-100 dark:hover:bg-accent"
+          className="absolute left-4 p-2 rounded-md text-gray-500 dark:text-muted-foreground hover:bg-gray-100 dark:hover:bg-accent"
+          style={{ top: 'max(env(safe-area-inset-top), 1rem)' }}
         >
           <MenuIcon size={24} />
         </button>
 
-        <div className="relative w-full max-w-4xl mx-auto px-6">
-          <div aria-hidden className="pointer-events-none absolute -top-16 right-[-10%] h-48 w-48 rounded-full bg-cyan-500/10 blur-3xl" />
-          <div aria-hidden className="pointer-events-none absolute -bottom-16 left-[-6%] h-56 w-56 rounded-full bg-indigo-500/10 blur-3xl" />
+        <div className="relative w-full max-w-4xl mx-auto px-4 sm:px-6">
+          <div aria-hidden className="hidden sm:block pointer-events-none absolute -top-16 right-[-10%] h-48 w-48 rounded-full bg-cyan-500/10 blur-3xl" />
+          <div aria-hidden className="hidden sm:block pointer-events-none absolute -bottom-16 left-[-6%] h-56 w-56 rounded-full bg-indigo-500/10 blur-3xl" />
 
-          <div className="relative rounded-2xl border border-gray-200/50 dark:border-border bg-white/70 dark:bg-secondary/50 backdrop-blur-xl shadow-xl p-8 md:p-10">
+          <div className="relative rounded-2xl border border-gray-200/50 dark:border-border bg-white/80 dark:bg-secondary/50 backdrop-blur-md md:backdrop-blur-xl shadow-xl p-5 sm:p-6 md:p-10 pb-24 sm:pb-10">
             <div className="flex flex-col items-center text-center">
               <motion.h1
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
-                className="mt-4 text-3xl md:text-5xl font-extrabold text-gray-900 dark:text-foreground flex items-center justify-center gap-3"
+                className="mt-2 sm:mt-4 text-2xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-foreground flex items-center justify-center gap-3"
               >
                 <span>Meet</span>
                 <span className="inline-block align-baseline relative top-[0.08em]">
@@ -221,17 +250,17 @@ const MessageView = ({ chatId, isSidebarOpen, setIsSidebarOpen, onSelectChat }) 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.4, delay: 0.15 }}
-                className="mt-3 text-sm md:text-base text-gray-600 dark:text-muted-foreground"
+                className="mt-2 sm:mt-3 text-sm md:text-base text-gray-600 dark:text-muted-foreground"
               >
                 Your versatile AI assistant for research, writing, and code—fast, context-aware, and secure. Ask for summaries, drafts, explanations, or ideas, and it adapts to your style.
               </motion.p>
 
-              <div className="mt-6 flex flex-wrap justify-center gap-2">
+              <div className="mt-4 sm:mt-6 flex flex-wrap justify-center gap-2 max-h-40 overflow-y-auto sm:max-h-none sm:overflow-visible">
                 {quickPrompts.map((p) => (
                   <button
                     key={p}
                     onClick={() => usePrompt(p)}
-                    className="px-3 py-1.5 rounded-full text-xs md:text-sm border border-gray-200 dark:border-border bg-white/60 dark:bg-secondary hover:bg-gray-100 dark:hover:bg-accent text-gray-700 dark:text-accent-foreground transition"
+                    className="px-3 py-1.5 rounded-full text-xs md:text-sm border border-gray-200 dark:border-border bg-white/70 dark:bg-secondary hover:bg-gray-100 dark:hover:bg-accent text-gray-700 dark:text-accent-foreground transition"
                   >
                     {p}
                   </button>
@@ -241,6 +270,19 @@ const MessageView = ({ chatId, isSidebarOpen, setIsSidebarOpen, onSelectChat }) 
               {/* Feature cards removed */}
             </div>
           </div>
+        </div>
+
+        {/* Big CTA at bottom to start a new chat */}
+  <div className="absolute inset-x-0 flex justify-center" style={{ bottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }}>
+          <motion.button
+            onClick={startNewChat}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground shadow-lg hover:opacity-90"
+          >
+            <PlusCircle size={18} />
+            <span className="font-semibold">START NEW CHAT</span>
+          </motion.button>
         </div>
       </div>
     );
@@ -259,7 +301,7 @@ const MessageView = ({ chatId, isSidebarOpen, setIsSidebarOpen, onSelectChat }) 
 
   return (
     <div className="flex-grow flex flex-col h-screen relative">
-      <div className="absolute top-4 left-4 z-10">
+  <div className="absolute left-4 z-10" style={{ top: 'max(env(safe-area-inset-top), 1rem)' }}>
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           className="p-2 rounded-md text-gray-500 dark:text-muted-foreground hover:bg-gray-100 dark:hover:bg-accent"
@@ -268,7 +310,7 @@ const MessageView = ({ chatId, isSidebarOpen, setIsSidebarOpen, onSelectChat }) 
         </button>
       </div>
       <Toaster />
-      <div className="flex-grow overflow-y-auto">
+  <div className="flex-grow overflow-y-auto overscroll-contain scroll-pb-28 md:scroll-pb-10">
         <div className="max-w-4xl w-full mx-auto px-4 pt-20 pb-10 space-y-8">
           <AnimatePresence>
             {data?.messages.map((msg) => (
@@ -369,7 +411,7 @@ const MessageView = ({ chatId, isSidebarOpen, setIsSidebarOpen, onSelectChat }) 
           <div ref={messagesEndRef} />
         </div>
       </div>
-      <div className="p-4 bg-transparent w-full">
+  <div className="p-4 safe-bottom bg-transparent w-full">
         <div className="max-w-4xl mx-auto">
           <form onSubmit={handleSubmit} className="relative">
             <textarea

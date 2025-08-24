@@ -3,13 +3,17 @@ import { motion } from 'framer-motion';
 import { Github } from 'lucide-react';
 
 // A compact floating badge that docks at top-right of the content area, expands on hover.
-const DeveloperCredit = () => {
+const DeveloperCredit = ({ isSidebarOpen }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: -8, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="pointer-events-auto fixed top-3 right-4 z-40"
+      className={
+        // Hide on small screens when sidebar is open to avoid covering + and theme buttons
+        `pointer-events-auto fixed z-40 ${isSidebarOpen ? 'hidden md:block' : 'block'}`
+      }
+      style={{ top: 'max(env(safe-area-inset-top), 0.75rem)', right: '1rem' }}
     >
       <a
         href="https://www.linkedin.com/in/souvik-senapati/"
