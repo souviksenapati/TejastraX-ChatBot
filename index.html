@@ -7,6 +7,19 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
     <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0d1117" />
+    <script>
+      // Set initial theme early to avoid flash; default to light when unset
+      (function () {
+        try {
+          var t = localStorage.getItem('theme');
+          if (t === 'dark') {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        } catch (_) {}
+      })();
+    </script>
   <title>TejastraX</title>
   </head>
   <body>

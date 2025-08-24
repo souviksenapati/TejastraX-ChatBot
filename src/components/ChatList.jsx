@@ -138,7 +138,7 @@ const ChatList = ({ selectedChatId, onSelectChat }) => {
         Are you sure you want to delete the chat "{chatToDelete?.title}"? This action cannot be undone.
       </ConfirmationModal>
 
-      <div className="w-full max-w-xs bg-white dark:bg-secondary/50 backdrop-blur-lg border-r border-gray-200 dark:border-border h-screen flex flex-col">
+  <div className="w-[280px] shrink-0 bg-white dark:bg-secondary/50 backdrop-blur-lg border-r border-gray-200 dark:border-border h-screen flex flex-col">
         <Toaster />
 
         {/* Header */}

@@ -15,7 +15,7 @@ const Dashboard = () => {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  const sidebarWidth = 320; // ~20rem (ChatList max-w-xs)
+  const sidebarWidth = 280; // Match ChatList fixed width
 
   return (
     // The `h-[100svh]` class is the key fix for mobile browser height

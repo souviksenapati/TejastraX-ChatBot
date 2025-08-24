@@ -301,7 +301,7 @@ const MessageView = ({ chatId, isSidebarOpen, setIsSidebarOpen, onSelectChat }) 
 
   return (
     <div className="flex-grow flex flex-col h-screen relative">
-  <div className="absolute left-4 z-10" style={{ top: 'max(env(safe-area-inset-top), 1rem)' }}>
+  <div className="absolute z-10" style={{ top: 'max(env(safe-area-inset-top), 1rem)', left: 'clamp(0.75rem, 2vw, 1rem)' }}>
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           className="p-2 rounded-md text-gray-500 dark:text-muted-foreground hover:bg-gray-100 dark:hover:bg-accent"
