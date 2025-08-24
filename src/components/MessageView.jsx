@@ -16,6 +16,8 @@ import {
   Pencil,
   Menu as MenuIcon,
   PlusCircle,
+  MessageSquare,
+  Sparkles,
   
 } from 'lucide-react';
 import clsx from 'clsx';
@@ -192,9 +194,13 @@ const MessageView = ({ chatId, isSidebarOpen, setIsSidebarOpen, onSelectChat }) 
       }
     };
 
-    const startNewChat = async () => {
+    const handleSubmitNoChat = async (e) => {
+      e.preventDefault();
+      const content = newMessage.trim();
+      if (!content || sendingMessage) return;
+      setNewMessage('');
       try {
-        const title = `New Chat - ${new Date().toLocaleTimeString()}`;
+        const title = `AI Chat ${new Date().toLocaleDateString('en-GB')} `;
         const res = await createChat({
           variables: { title },
           update: (cache, { data }) => {
@@ -208,14 +214,18 @@ const MessageView = ({ chatId, isSidebarOpen, setIsSidebarOpen, onSelectChat }) 
                 data: { chats: [newChat, ...existingChats] },
               });
             } catch (e) {
-              // ignore if cache not primed
+              // cache may not be primed yet
             }
           },
         });
-        const newId = res?.data?.insert_chats_one?.id;
-        if (newId) onSelectChat?.(newId);
+        const targetChatId = res?.data?.insert_chats_one?.id;
+        if (!targetChatId) return;
+        onSelectChat?.(targetChatId);
+        await insertUserMessage({ variables: { chat_id: targetChatId, content } });
+        await sendMessageAction({ variables: { chat_id: targetChatId, message: String(content) } });
       } catch (err) {
         toast.error(`Failed to start chat: ${err.message}`);
+        setNewMessage(content);
       }
     };
 
@@ -272,17 +282,38 @@ const MessageView = ({ chatId, isSidebarOpen, setIsSidebarOpen, onSelectChat }) 
           </div>
         </div>
 
-        {/* Big CTA at bottom to start a new chat */}
-  <div className="absolute inset-x-0 flex justify-center" style={{ bottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }}>
-          <motion.button
-            onClick={startNewChat}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground shadow-lg hover:opacity-90"
-          >
-            <PlusCircle size={18} />
-            <span className="font-semibold">START NEW CHAT</span>
-          </motion.button>
+        {/* Bottom input: create a chat on submit and send the first message */}
+        <div className="p-4 safe-bottom bg-transparent w-full absolute inset-x-0" style={{ bottom: 0 }}>
+          <div className="max-w-4xl mx-auto">
+            <form onSubmit={handleSubmitNoChat} className="relative">
+              <textarea
+                ref={textareaRef}
+                rows={1}
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSubmitNoChat(e);
+                  }
+                }}
+                placeholder="Ask AI anything..."
+                className="w-full p-4 pr-16 bg-white dark:bg-secondary border border-gray-300 dark:border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary transition-shadow text-gray-900 dark:text-foreground placeholder-gray-500 dark:placeholder-muted-foreground resize-none"
+                style={{ maxHeight: '200px' }}
+              />
+              <button
+                type="submit"
+                disabled={!newMessage.trim() || sendingMessage}
+                className="absolute right-3.5 bottom-3 p-2 bg-primary text-primary-foreground rounded-lg disabled:bg-muted disabled:text-muted-foreground transition-colors"
+              >
+                {sendingMessage ? (
+                  <Loader2 className="animate-spin" size={20} />
+                ) : (
+                  <SendHorizonal size={20} />
+                )}
+              </button>
+            </form>            
+          </div>
         </div>
       </div>
     );
@@ -298,6 +329,70 @@ const MessageView = ({ chatId, isSidebarOpen, setIsSidebarOpen, onSelectChat }) 
     return (
       <div className="flex-grow p-4 text-destructive h-full">Error: {error.message}</div>
     );
+
+  // Empty-state UI when a chat is selected but has no messages yet
+  if (data && Array.isArray(data.messages) && data.messages.length === 0) {
+    return (
+      <div className="flex-grow flex flex-col h-screen relative">
+        <div className="absolute z-10" style={{ top: 'max(env(safe-area-inset-top), 1rem)', left: 'clamp(0.75rem, 2vw, 1rem)' }}>
+          <button
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="p-2 rounded-md text-gray-500 dark:text-muted-foreground hover:bg-gray-100 dark:hover:bg-accent"
+          >
+            <MenuIcon size={24} />
+          </button>
+        </div>
+        <Toaster />
+        <div className="flex-grow flex items-center justify-center">
+          <div className="text-center px-6 max-w-2xl">
+            <div className="mx-auto h-14 w-14 rounded-xl bg-gray-200 dark:bg-white/10 backdrop-blur flex items-center justify-center">
+              <MessageSquare className="text-gray-600 dark:text-gray-300" size={24} />
+            </div>
+            <h2 className="mt-6 text-2xl md:text-3xl font-semibold text-gray-900 dark:text-foreground">Start the Conversation</h2>
+            <p className="mt-2 text-sm md:text-base text-gray-600 dark:text-muted-foreground">
+              This is the beginning of your chat with our AI assistant. Send a message below to get started!
+            </p>
+            <div className="mt-4 inline-flex items-center gap-2 text-xs text-gray-500 dark:text-muted-foreground">
+              <Sparkles size={14} />
+              <span>AI is ready to chat</span>
+            </div>
+          </div>
+        </div>
+        <div className="p-4 safe-bottom bg-transparent w-full">
+          <div className="max-w-4xl mx-auto">
+            <form onSubmit={handleSubmit} className="relative">
+              <textarea
+                ref={textareaRef}
+                rows={1}
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSubmit(e);
+                  }
+                }}
+                placeholder="Ask AI anything..."
+                className="w-full p-4 pr-16 bg-white dark:bg-secondary border border-gray-300 dark:border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary transition-shadow text-gray-900 dark:text-foreground placeholder-gray-500 dark:placeholder-muted-foreground resize-none"
+                style={{ maxHeight: '200px' }}
+              />
+              <button
+                type="submit"
+                disabled={!newMessage.trim() || sendingMessage}
+                className="absolute right-3.5 bottom-3 p-2 bg-primary text-primary-foreground rounded-lg disabled:bg-muted disabled:text-muted-foreground transition-colors"
+              >
+                {sendingMessage ? (
+                  <Loader2 className="animate-spin" size={20} />
+                ) : (
+                  <SendHorizonal size={20} />
+                )}
+              </button>
+            </form>            
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-grow flex flex-col h-screen relative">

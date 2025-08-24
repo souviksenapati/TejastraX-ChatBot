@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSignInEmailPassword } from '@nhost/react';
+import { nhost } from '../lib/nhost';
 import { Link, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { ArrowRight, Sun, Moon } from 'lucide-react';
@@ -32,6 +33,18 @@ const SignIn = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { signInEmailPassword, isLoading, isSuccess, isError, error } = useSignInEmailPassword();
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await nhost.auth.signIn({
+        provider: 'google',
+        options: { redirectTo: `${window.location.origin}/` },
+      });
+    } catch (e) {
+      // In OAuth flows this usually redirects; show error just in case
+      console.error(e);
+    }
+  };
 
   const handleSignIn = async (e) => {
     e.preventDefault();
@@ -157,6 +170,23 @@ const SignIn = () => {
                   </a>
                 </p>
               </form>
+
+                {/* Divider */}
+                <div className="my-5 flex items-center gap-3">
+                  <div className="h-px flex-1 bg-gray-200 dark:bg-white/10" />
+                  <span className="text-xs text-gray-500 dark:text-slate-400">or continue with</span>
+                  <div className="h-px flex-1 bg-gray-200 dark:bg-white/10" />
+                </div>
+
+                {/* Google Sign-in */}
+                <button
+                  type="button"
+                  onClick={handleGoogleSignIn}
+                  className="w-full inline-flex items-center justify-center gap-3 rounded-2xl border border-gray-200 dark:border-white/10 bg-white/80 dark:bg-[#0d172a]/70 px-4 py-3 text-sm font-medium text-gray-900 dark:text-slate-100 hover:bg-gray-50 dark:hover:bg-[#0d172a]/80 transition"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className="h-5 w-5"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303C33.582,31.521,29.167,35,24,35c-6.627,0-12-5.373-12-12 s5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.756,5.053,29.613,3,24,3C12.955,3,4,11.955,4,23 s8.955,20,20,20s20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,16.108,18.961,13,24,13c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657 C34.756,5.053,29.613,3,24,3C16.318,3,9.656,7.337,6.306,14.691z"/><path fill="#4CAF50" d="M24,43c5.11,0,9.787-1.961,13.314-5.178l-6.146-5.196C29.211,34.091,26.715,35,24,35 c-5.137,0-9.542-3.47-11.289-8.268l-6.522,5.025C9.49,39.556,16.227,43,24,43z"/><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-1.089,3.438-3.716,6.135-6.989,7.521 c0.001-0.001,0.001-0.001,0.002-0.001l6.146,5.196C33.976,41.812,44,35,44,23C44,22.659,43.862,21.35,43.611,20.083z"/></svg>
+                  Continue with Google
+                </button>
             </div>
           </div>
         </div>
